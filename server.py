@@ -7,7 +7,7 @@ import string
 from urllib.parse import urlparse
 import LinkShortener
 
-host = 'https://link-short-light.herokuapp.com/'
+host = 'https://localhost:5000/'
 
 app = Flask(__name__)
 CORS(app)
