@@ -16,7 +16,7 @@ class LinkShortener:
             self.url[current_url] = shortened_url
             self.url_id += 1
 
-        return "https://link-short-light.herokuapp.com/" + shortened_url
+        return "http://localhost:5000/decode/" + shortened_url
 
     # we apply base 62 encoding so we can compress base10 to base62
     # base62 supports 56800 times more url than base10
