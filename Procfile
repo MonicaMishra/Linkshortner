@@ -1,1 +1,1 @@
-web: gunicorn python_link_shortener:app
+web: gunicorn server:app
