@@ -1,3 +1,16 @@
+from flask import Flask
+from flask_cors import CORS
+from flask import send_file
+from flask import request
+from math import floor
+import string
+from urllib.parse import urlparse
+
+host = 'http://localhost:5000/'
+
+app = Flask(__name__)
+CORS(app)
+
 class link_shortener:
     # The id used here is required to map the shortened urls. In our case, we will
     # maintain a dictionary to store url and their corresponding shortened url
@@ -16,7 +29,7 @@ class link_shortener:
             self.url[current_url] = shortened_url
             self.url_id += 1
 
-        return "make_my_url_short/" + shortened_url
+        return "http://localhost:5000/decode/" + shortened_url
 
     # we apply base 62 encoding so we can compress base10 to base62
     # base62 supports 56800 times more url than base10
@@ -30,8 +43,7 @@ class link_shortener:
         # reverse the final result before returning it
         return "".join(result_list[::-1])
 
-    def base62_decoder(self, url):
-        _id = url.split("/")[1]
+    def base62_decoder(self, _id):
         decoder_id = 0
         k = len(_id) - 1 # k represents the exponent for 62 in terms of index (Ex: 62 ** 2)
         for i in _id:
@@ -42,15 +54,35 @@ class link_shortener:
                 decoder_id += int(index) * pow(62, k)
             k -= 1
         return self.decoder_url[decoder_id]
+    
+short_url = link_shortener()
 
-if __name__ == "__main__":
-    short_url = link_shortener()
-    current_url = "http://www.theblaze.com/blog/2011/02/01/kansas-city-star-complains-about-the-lack-of-response-during-his-response-to-the-response-to-his-response-to-a-point-he-didnt-hear-and-doesnt-understand/"
-    print("Current URL: ", current_url)
-    my_short_url = short_url.shorten_url(current_url)
-    print("Shortened URL: ", my_short_url) # we can use this as a shortened url to display
-    after_decoding = short_url.base62_decoder(my_short_url)
-    print ("After decoding: ", after_decoding) # for any redirection purpose always use a decoder function on the shortened url so that we get the original url
+@app.route('/')
+def hello():
+    return send_file('./index.html')
 
+@app.route('/url', methods=['POST'])
+def parse_url():
+    url = request.form.get('url')
+    my_short_url = short_url.shorten_url(url)
+    return my_short_url
 
-	
+@app.route('/decode/<_id>')
+def decode_url(_id):
+    my_long_url = short_url.base62_decoder(_id)
+    html = """
+    <!DOCTYPE html>
+        <html lang="en">
+            <head>
+                <script>
+                    window.open('{}');
+                </script>
+            </head>
+            <body>
+            </body>
+        </html>
+    """.format(my_long_url)
+    return html
+
+if __name__ == '__main__':
+    app.run()
